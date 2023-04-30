@@ -1,0 +1,152 @@
+import java.util.ArrayList;
+// HashMap class is generic  beacuse the linkedlListNode we are adding is generic  that's why  K and V
+
+public class HashMap <K, V>  {
+     int count;
+     int noOfBuckets;
+
+       // buckets is the arraylist of MapNode type and MapNopde itself is a class of generic type that can take and data for its key and value
+         ArrayList<MapNode<K, V>> buckets;
+         HashMap(){
+              buckets = new ArrayList<>();
+              noOfBuckets = 5;
+               for(int i =0; i<noOfBuckets; i++){
+                    buckets.add(null);
+               }
+
+
+    }
+     private int getIndex(K key){
+              int hc = key.hashCode();
+              // hashcode function is in object class if some other class like string has its own hashcode function then it will be overidden
+              int index = hc % noOfBuckets;
+              return index;
+     }
+      public  int  size(){
+              return count;
+      }
+      // LOAD FACTOR
+    // In avg case max of n/b entries( that is n = total elemnts and b = size of our list) come in one index due to great implementation of  hash function s
+    // this n/b is known as load factor and also this is the time complexity of traversing in linked list
+    // if this n/b becomes greater then 0.7 we do rehashing
+    // rehashing = increasing the size of our bucket that is list
+    public  double getLoadFactor(){
+             double lf = (count*1.0)/noOfBuckets;
+             return lf;
+    }
+     private void rehash(){
+             // we will double the size of our list
+         // but we can't copy elemnts in same index
+         // since size has changed so in taking mod also size changes the same  index value will not come
+         // so we have to insert again previous element in this changed size arraylist
+         ArrayList<MapNode<K, V>> temp = buckets;
+         buckets = new ArrayList<>();
+         noOfBuckets = 2*noOfBuckets;
+         count =0;
+         for(int i =0; i<noOfBuckets; i++){
+              buckets.add(null);
+         }
+          for(int i =0;i<temp.size(); i++){
+              MapNode<K, V> head= temp.get(i);
+               while(head!=null){
+                   K  key = head.key;
+                   V value = head.value;
+                   insert(key, value);
+
+
+                   head = head.next;
+
+               }
+
+
+
+          }
+     }
+
+
+
+
+     public void insert(K key, V value) {
+         int index = getIndex(key);
+         MapNode<K, V> head = buckets.get(index);
+
+         while (head != null) {
+             // if key is already present then simply update the value;
+             if (key.equals(head.key)) {
+                 head.value = value;
+                 return;
+
+             }
+             head = head.next;
+
+         }
+         // if we are here that means we have not found key and we are inserting at front of the linkelist
+         //     that is we will make the newNode head and now new node will be present at that index
+         MapNode<K, V> newNode = new MapNode<>(key, value);
+         head = buckets.get(index);
+         newNode.next = head;
+         buckets.set(index, newNode);
+         count++;
+          double lf = getLoadFactor();
+          if(lf>=0.7){
+               rehash();
+          }
+
+
+     }
+     public V getValue(K key ){
+         int index = getIndex(key);
+         MapNode<K, V> head = buckets.get(index);
+           while (head!=null){
+                if(head.key.equals(key)){
+                     return head.value;
+                }
+           }
+            return null;
+     }
+      public V remove(K key){
+
+          int index = getIndex(key);
+          MapNode<K, V> head = buckets.get(index);
+           MapNode<K, V> prev = null;
+           while(head!=null){
+                if(key.equals(head.key)){
+                    V ans= head.value;
+                     if(prev==null){
+
+                          buckets.set(index, head.next);
+
+                     }else{
+                         prev.next = head.next;
+
+                     }
+
+                     count--;
+                      return ans;
+
+                }
+                 prev = head;
+                 head = head.next;
+
+           }
+            return null;
+
+      }
+
+
+}
+// class for the node we are going to insert in arraylist we are making this genric
+//  that's why  K and V for genric type
+ class MapNode <K,V>{
+    K key;
+    V value;
+     MapNode<K, V> next;
+
+    MapNode(K k, V v){
+         this.key =k;
+         this.value  = v;
+
+
+    }
+
+ }
